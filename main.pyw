@@ -21,10 +21,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.viewagent()
+        self.setFixedSize(430,310)
+
+        self.setWindowIcon(QtGui.QIcon('icon.png'))
+        # set the title
+        self.setWindowTitle("Icon")
 
         #button clicked
         self.ui.generate.clicked.connect(self.generate_pw)
-        self.ui.new_btn.clicked.connect(self.new_data)
+        self.ui.new_btn.clicked.connect(self.clear_input)
         self.ui.del_btn.clicked.connect(self.del_data)
         self.ui.save_btn.clicked.connect(self.update_data)
 
@@ -44,12 +49,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #button function
     def clear_input(self):
-            self.ui.site_input.setText("")
-            self.ui.user_name_input.setText("")
-            self.ui.pw_input.setText("")
+        self.ui.site_input.setText("")
+        self.ui.user_name_input.setText("")
+        self.ui.pw_input.setText("")
+        self.viewagent()
 
     def list_clicked(self,qModelIndex):
-        global site_name
+        global site_name, user
         site_name=self.ui.qList[qModelIndex.row()]
         fetch=c.execute("SELECT * FROM password WHERE site=:site",{"site":site_name}).fetchone()
         print(fetch)
@@ -63,6 +69,7 @@ class MainWindow(QtWidgets.QMainWindow):
         import string
 
         char = string.printable
+        #0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+, -./:;<=>?@[\]^_`{|}~
         pw_length = 12
         pw = ""
         import random
@@ -71,41 +78,52 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pw_input.setText(pw)
 
     def new_data(self):
-        try:
-            target=self.ui.user_name_input.text()
-            user=self.ui.user_name_input.text()
-            pw=self.ui.pw_input.text()
-            c.execute(("INSERT OR REPLACE INTO password VALUES(?,?,?)"),(target,user,pw))
-            conn.commit()
-            self.ui.statusbar.showMessage(self.ui.site_input.text()+" is added",5000)
-            self.clear_input()            
-            self.viewagent()
-        except:
-            self.ui.statusbar.showMessage("Something wring! Please try again",5000)
-            self.viewagent()
+        pass
+        # try:
+            # target=self.ui.site_input.text()
+            # user=self.ui.user_name_input.text()
+            # pw=self.ui.pw_input.text()
+            # c.execute(("INSERT OR REPLACE INTO password VALUES(?,?,?)"),(target,user,pw))
+            # conn.commit()
+            # self.ui.statusbar.showMessage(self.ui.site_input.text()+" is added",5000)
+            # self.clear_input()            
+            # self.viewagent()
+        # except:
+        #     self.ui.statusbar.showMessage("Something wring! Please try again",5000)
+        #     self.viewagent()
 
     
     def update_data(self,qModelIndex):
-        try:
-            c.execute("UPDATE password SET site=:new_site_name, id=:user, password=:pw WHERE site=:site_name",
-                        {"new_site_name":self.ui.site_input.text(),"user":self.ui.user_name_input.text(),"pw":self.ui.pw_input.text(),"site_name":site_name})
-            
-            conn.commit()
-            self.ui.statusbar.showMessage(site_name+" is updated",5000)
-            self.viewagent()
-        except:
-            self.ui.statusbar.showMessage("Something wring! Please try again",5000)
-            self.viewagent()
+        if self.ui.site_input.text()!="":
+            try:
+                if self.ui.site_input.text()==user:
+                    c.execute("UPDATE password SET site=:new_site_name, id=:user, password=:pw WHERE site=:site_name",
+                                {"new_site_name":self.ui.site_input.text(),"user":self.ui.user_name_input.text(),"pw":self.ui.pw_input.text(),"site_name":site_name})
+                    
+                    conn.commit()
+                    self.ui.statusbar.showMessage(site_name+" is updated",5000)
+
+                else:
+                    c.execute(("INSERT OR REPLACE INTO password VALUES(?,?,?)"),(self.ui.site_input.text(),self.ui.user_name_input.text(),self.ui.pw_input.text()))
+                    conn.commit()
+                    self.ui.statusbar.showMessage(self.ui.site_input.text()+" is added",5000)
+                self.clear_input()  
+
+            except:
+                self.ui.statusbar.showMessage("Something wrong! Please try again",5000)
+        else:
+            self.ui.statusbar.showMessage("Please input the site name",5000)
+        
+
 
     def del_data(self):
         try:
             c.execute("DELETE FROM password WHERE site=:site_name",{"site_name":site_name})
             conn.commit()
             self.clear_input()
-            self.viewagent()
             self.ui.statusbar.showMessage(site_name+" is deleted",5000)
         except:
-            self.ui.statusbar.showMessage("Something wring! Please try again",5000)
+            self.ui.statusbar.showMessage("Something wrong! Please try again",5000)
             self.viewagent()
 
 
