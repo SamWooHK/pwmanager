@@ -77,40 +77,44 @@ class MainWindow(QtWidgets.QMainWindow):
             pw += char[random.randint(0,90)]
         self.ui.pw_input.setText(pw)
 
-    def new_data(self):
-        pass
-        # try:
-            # target=self.ui.site_input.text()
-            # user=self.ui.user_name_input.text()
-            # pw=self.ui.pw_input.text()
-            # c.execute(("INSERT OR REPLACE INTO password VALUES(?,?,?)"),(target,user,pw))
-            # conn.commit()
-            # self.ui.statusbar.showMessage(self.ui.site_input.text()+" is added",5000)
-            # self.clear_input()            
-            # self.viewagent()
-        # except:
-        #     self.ui.statusbar.showMessage("Something wring! Please try again",5000)
-        #     self.viewagent()
+    # def new_data(self):
+    #     try:
+    #         target=self.ui.site_input.text()
+    #         user=self.ui.user_name_input.text()
+    #         pw=self.ui.pw_input.text()
+    #         c.execute(("INSERT OR REPLACE INTO password VALUES(?,?,?)"),(target,user,pw))
+    #         conn.commit()
+    #         self.ui.statusbar.showMessage(self.ui.site_input.text()+" is added",5000)
+    #         self.clear_input()            
+    #         self.viewagent()
+    #     except:
+    #         self.ui.statusbar.showMessage("Something wring! Please try again",5000)
+    #         self.viewagent()
 
     
     def update_data(self,qModelIndex):
         if self.ui.site_input.text()!="":
             try:
-                if self.ui.site_input.text()==user:
+                new_site=self.ui.site_input.text()
+                new_user=self.ui.user_name_input.text()
+                new_pw=self.ui.pw_input.text()
+                print(type(new_site),new_user,new_pw)
+
+                try:
                     c.execute("UPDATE password SET site=:new_site_name, id=:user, password=:pw WHERE site=:site_name",
-                                {"new_site_name":self.ui.site_input.text(),"user":self.ui.user_name_input.text(),"pw":self.ui.pw_input.text(),"site_name":site_name})
+                                {"new_site_name":new_site,"user":new_user,"pw":new_pw,"site_name":site_name})
                     
                     conn.commit()
                     self.ui.statusbar.showMessage(site_name+" is updated",5000)
 
-                else:
-                    c.execute(("INSERT OR REPLACE INTO password VALUES(?,?,?)"),(self.ui.site_input.text(),self.ui.user_name_input.text(),self.ui.pw_input.text()))
+                except:
+                    c.execute(f"INSERT INTO password VALUES ({new_site},{new_user},{new_pw})")
                     conn.commit()
-                    self.ui.statusbar.showMessage(self.ui.site_input.text()+" is added",5000)
+                    self.ui.statusbar.showMessage(new_site+" is added",5000)
                 self.clear_input()  
 
-            except:
-                self.ui.statusbar.showMessage("Something wrong! Please try again",5000)
+            except Exception as e:
+                self.ui.statusbar.showMessage(f"{e}",5000)
         else:
             self.ui.statusbar.showMessage("Please input the site name",5000)
         
@@ -123,7 +127,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.clear_input()
             self.ui.statusbar.showMessage(site_name+" is deleted",5000)
         except:
-            self.ui.statusbar.showMessage("Something wrong! Please try again",5000)
+            self.ui.statusbar.showMessage("No data to delete",5000)
             self.viewagent()
 
 
